@@ -43,12 +43,15 @@ class LightweightFaceDetector():
     def detect(self, img_arr, threshold=0.8):
         """Main interface"""
         preprocessed_img_arr = self._preprocess(img_arr)
+        print(preprocessed_img_arr.shape)
         confidences, boxes = self._predict(preprocessed_img_arr)
         bboxes, labels, probs = self._postprocess(img_arr.shape[1],
                                                   img_arr.shape[0],
                                                   confidences,
                                                   boxes,
                                                   threshold)
+
+        print(bboxes, labels, probs)
         return bboxes, labels, probs
 
     def _postprocess(self, width, height, confidences, boxes, prob_threshold, iou_threshold=0.3, top_k=-1):

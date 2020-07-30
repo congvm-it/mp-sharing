@@ -1,4 +1,3 @@
-import multiprocessing
 from multiprocessing.managers import BaseManager
 
 
@@ -6,20 +5,23 @@ class SharedManager():
     def __init__(self):
         self.sharing_manager = BaseManager()
         self.register_cls = []
+        self.shared_dict = {}
+        self.index = 0
 
-    def register(self, cls, *args, **kwargs):
-        cls_name = cls.__name__
-        self.sharing_manager.register(cls_name, cls)
-        self.register_cls.append([cls_name, args, kwargs])
+    def register(self, cls, name, *args, **kwargs):
+        self.sharing_manager.register(name, cls)
+        self.register_cls.append([name, args, kwargs])
+        return self.index
 
-    def get_shared_instances(self):
+    def __getitem__(self, cls):
+        return self.shared_dict[cls]
+
+    def allocate_memory(self):
         self.sharing_manager.start()
-        shared_dict = {}
-        for cls_name, args, kwargs in self.register_cls:
-            cls = getattr(self.sharing_manager, cls_name, None)
+        for name, args, kwargs in self.register_cls:
+            cls = getattr(self.sharing_manager, name, None)
             if cls is not None:
                 inst = cls(*args, **kwargs)
-                shared_dict[cls_name] = inst
+                self.shared_dict[name] = inst
             else:
-                shared_dict[cls_name] = None
-        return shared_dict
+                self.shared_dict[name] = None
